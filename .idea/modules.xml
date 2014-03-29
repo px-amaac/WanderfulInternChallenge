@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/WanderfulInternChallenge.iml" filepath="$PROJECT_DIR$/WanderfulInternChallenge.iml" />
+      <module fileurl="file://$PROJECT_DIR$/WanderfulInternChallenge/WanderfulInternChallenge-WanderfulInternChallenge.iml" filepath="$PROJECT_DIR$/WanderfulInternChallenge/WanderfulInternChallenge-WanderfulInternChallenge.iml" />
+    </modules>
+  </component>
+</project>
+
