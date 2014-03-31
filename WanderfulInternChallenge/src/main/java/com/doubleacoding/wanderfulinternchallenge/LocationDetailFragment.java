@@ -5,7 +5,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.doubleacoding.wanderfulinternchallenge.dummy.DummyContent;
 
@@ -52,9 +51,7 @@ public class LocationDetailFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_location_detail, container, false);
 
         // Show the dummy content as text in a TextView.
-        if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.location_detail)).setText(mItem.content);
-        }
+
 
         return rootView;
     }
