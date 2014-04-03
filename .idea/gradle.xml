@@ -7,8 +7,8 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/WanderfulInternChallenge" />
+            <option value="D:\ShadyNastys\My Documents\GitHub\WanderfulInternChallenge" />
+            <option value="D:\ShadyNastys\My Documents\GitHub\WanderfulInternChallenge\WanderfulInternChallenge" />
           </set>
         </option>
       </GradleProjectSettings>

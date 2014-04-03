@@ -3,5 +3,6 @@
 
     <string name="app_name">WanderfulInternChallenge</string>
     <string name="title_location_detail">Location Detail</string>
+    <string name="search">Search</string>
 
 </resources>

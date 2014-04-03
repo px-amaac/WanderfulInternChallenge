@@ -1,8 +1,12 @@
 package com.doubleacoding.wanderfulinternchallenge;
 
+import android.app.ActionBar;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.view.LayoutInflater;
+import android.view.View;
 
 
 /**
@@ -34,7 +38,15 @@ public class LocationListActivity extends FragmentActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location_list);
-
+        /*getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+        */
+        ActionBar aB = getActionBar();
+        aB.setDisplayHomeAsUpEnabled(true);
+        aB.setDisplayShowCustomEnabled(true);
+        LayoutInflater inf = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View v = inf.inflate(R.layout.autocomplete_view, null);
+        getActionBar().setCustomView(v);
         if (findViewById(R.id.location_detail_container) != null) {
             // The detail container view will be present only in the
             // large-screen layouts (res/values-large and
