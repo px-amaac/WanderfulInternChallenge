@@ -3,10 +3,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/menu_search"
         android:title="@string/search"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:actionLayout="@layout/autocomplete_view"
-        android:actionViewClass="android.widget.AutoCompleteTextView"
+        android:icon="@android:drawable/ic_menu_search"
+        android:actionViewClass="android.widget.SearchView"
         android:showAsAction="ifRoom|collapseActionView"
         />
     <requestFocus />

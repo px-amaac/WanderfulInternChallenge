@@ -1,24 +1,26 @@
 package com.doubleacoding.wanderfulinternchallenge;
 
 import android.app.ActionBar;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
-import android.view.View;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.widget.SearchView;
 
 
 /**
  * An activity representing a list of Locations. This activity
  * has different presentations for handset and tablet-size devices. On
  * handsets, the activity presents a list of items, which when touched,
- * lead to a {@link LocationDetailActivity} representing
- * item details. On tablets, the activity presents the list of items and
- * item details side-by-side using two vertical panes.
+ * lead to a Map. On tablets, the activity presents the list of items and
+ * map side-by-side using two vertical panes.
  * <p>
  * The activity makes heavy use of fragments. The list of items is a
- * {@link LocationListFragment} and the item details
+ * {@link LocationListFragment} and the map
  * (if present) is a {@link LocationDetailFragment}.
  * <p>
  * This activity also implements the required
@@ -45,8 +47,7 @@ public class LocationListActivity extends FragmentActivity
         aB.setDisplayHomeAsUpEnabled(true);
         aB.setDisplayShowCustomEnabled(true);
         LayoutInflater inf = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View v = inf.inflate(R.layout.autocomplete_view, null);
-        getActionBar().setCustomView(v);
+
         if (findViewById(R.id.location_detail_container) != null) {
             // The detail container view will be present only in the
             // large-screen layouts (res/values-large and
@@ -62,6 +63,19 @@ public class LocationListActivity extends FragmentActivity
         }
 
         // TODO: If exposing deep links into your app, handle intents here.
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.main, menu);
+        SearchManager mSearchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView mSearchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
+        mSearchView.setSearchableInfo(mSearchManager.getSearchableInfo(getComponentName()));
+        mSearchView.setIconifiedByDefault(false);
+        return super.onCreateOptionsMenu(menu);
     }
 
     /**
