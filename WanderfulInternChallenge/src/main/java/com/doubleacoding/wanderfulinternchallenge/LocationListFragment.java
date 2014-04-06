@@ -1,13 +1,33 @@
 package com.doubleacoding.wanderfulinternchallenge;
 
 import android.app.Activity;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import com.doubleacoding.wanderfulinternchallenge.dummy.DummyContent;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.net.ssl.HttpsURLConnection;
 
 /**
  * A list fragment representing a list of Locations. This fragment
@@ -19,7 +39,19 @@ import com.doubleacoding.wanderfulinternchallenge.dummy.DummyContent;
  * interface.
  */
 public class LocationListFragment extends ListFragment {
+    public static final String TAG = "listFratment";
+    // Whether there is a wifi connection.
+    private static boolean wifiConnected = false;
+    // Whether there is a mobile connection.
+    private static boolean mobileConnected = false;
 
+    //URL building strings.
+    private String URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=";
+    private String ADD_LOCATION = "&location=";
+    private String DEFAULT_RADIUS_SENSOR_ADD_KEY = "&radius=50&sensor=true&key=";
+
+    //data in the list.
+    private List<HashMap<String,String>> data = null;
     /**
      * The serialization (saved instance state) Bundle key representing the
      * activated item position. Only used on tablets.
@@ -47,23 +79,22 @@ public class LocationListFragment extends ListFragment {
          * Callback for when an item has been selected.
          */
         public void onItemSelected(String id);
-    }
 
-    /**
-     * A dummy implementation of the {@link Callbacks} interface that does
-     * nothing. Used only when this fragment is not attached to an activity.
-     */
-    private static Callbacks sDummyCallbacks = new Callbacks() {
-        @Override
-        public void onItemSelected(String id) {
-        }
-    };
+        public String getQuery();
+
+        public String getLatLng();
+    }
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
     public LocationListFragment() {
+    }
+
+    public boolean checkAdapter() {
+        SimpleAdapter adapter = (SimpleAdapter) getListAdapter();
+        return adapter != null;
     }
 
     @Override
@@ -97,16 +128,58 @@ public class LocationListFragment extends ListFragment {
         if (!(activity instanceof Callbacks)) {
             throw new IllegalStateException("Activity must implement fragment's callbacks.");
         }
-
         mCallbacks = (Callbacks) activity;
     }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        updateConnectedFlags();
+        try {
+            queryPlaces();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+    // Checks the network connection and sets the wifiConnected and mobileConnected
+    // variables accordingly.
+    private void updateConnectedFlags() {
+        ConnectivityManager connMgr =
+                (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeInfo = connMgr.getActiveNetworkInfo();
+        if (activeInfo != null && activeInfo.isConnected()) {
+            wifiConnected = activeInfo.getType() == ConnectivityManager.TYPE_WIFI;
+            mobileConnected = activeInfo.getType() == ConnectivityManager.TYPE_MOBILE;
+        } else {
+            wifiConnected = false;
+            mobileConnected = false;
+        }
+    }
+
+    private void queryPlaces() throws UnsupportedEncodingException {
+        if (wifiConnected || mobileConnected){
+
+            String query = URLEncoder.encode(mCallbacks.getQuery(), "utf-8");
+            StringBuilder sBuilder = new StringBuilder(URL);
+            sBuilder.append(URLEncoder.encode(query, "utf8"));
+            sBuilder.append(ADD_LOCATION);
+            sBuilder.append(URLEncoder.encode(mCallbacks.getLatLng(), "utf-8"));
+            sBuilder.append(DEFAULT_RADIUS_SENSOR_ADD_KEY);
+            sBuilder.append(getResources().getString(R.string.places_api_key));
+            if(this.isAdded())
+            new GetPlacesTask().execute(sBuilder.toString());
+        } else {
+            Toast.makeText(getActivity(), "No Network Connection Available", Toast.LENGTH_LONG);
+        }
+    }
+
+
 
     @Override
     public void onDetach() {
         super.onDetach();
 
-        // Reset the active callbacks interface to the dummy implementation.
-        mCallbacks = sDummyCallbacks;
     }
 
     @Override
@@ -147,5 +220,60 @@ public class LocationListFragment extends ListFragment {
         }
 
         mActivatedPosition = position;
+    }
+    // Uses AsyncTask to create a task away from the main UI thread. This task takes a
+    // query string and uses it to create an HttpUrlConnection. Once the connection
+    // has been established, the AsyncTask downloads the contents of the JSON as
+    // an InputStream. Finally, the InputStream is converted into a JSON, which is
+    // displayed in the UI by the AsyncTask's onPostExecute method.
+    private class GetPlacesTask extends AsyncTask<String, Void, String> {
+        HttpURLConnection connection = null;
+        List<HashMap<String, String>> items = null;
+        PlacesParser placesParse = new PlacesParser();
+        @Override
+        protected String doInBackground(String... urls) {
+            StringBuilder results = new StringBuilder();
+            try{
+                InputStream JSONStream = downloadUrl(urls[0]);
+
+                items = placesParse.readStream(JSONStream);
+                if (items == null) {
+                    return getResources().getString(R.string.data_not_there);
+                } else
+                    return getResources().getString(R.string.data_loaded);
+           }catch (IOException e) {
+                return getResources().getString(R.string.invalid_url);
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        }
+        @Override
+        protected void onPostExecute(String result) {
+            Toast.makeText(getActivity(), result, Toast.LENGTH_LONG).show();
+            if (items.isEmpty()) {
+                Toast.makeText(getActivity(), getResources().getString(R.string.query_empty), Toast.LENGTH_LONG).show();
+                getActivity().onBackPressed();
+            } else{
+                ListViewLoaderTask lvLoader = new ListViewLoaderTask();
+                lvLoader.execute(items);
+            }
+        }
+    }
+
+    // Given a string representation of a URL, sets up a connection and gets
+    // an input stream.
+    private InputStream downloadUrl(String urlString) throws IOException {
+        URL url = new URL(urlString);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setReadTimeout(100000 /* milliseconds */);
+        connection.setConnectTimeout(150000 /* milliseconds */);
+        connection.setRequestMethod("GET");
+        connection.setDoInput(true);
+        // Starts the query
+        connection.connect();
+        InputStream stream = connection.getInputStream();
+        return stream;
     }
 }

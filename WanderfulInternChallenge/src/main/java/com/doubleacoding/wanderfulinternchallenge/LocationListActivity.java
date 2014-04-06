@@ -11,7 +11,6 @@ import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -51,6 +50,7 @@ public class LocationListActivity extends FragmentActivity
     private SearchView mSearchView;
     private boolean mTwoPane;
     private Location mloc;
+    private String query;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,8 +61,6 @@ public class LocationListActivity extends FragmentActivity
 
         ActionBar aB = getActionBar();
         aB.setDisplayHomeAsUpEnabled(true);
-        aB.setDisplayShowCustomEnabled(true);
-        LayoutInflater inf = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         if(readyToGo()) {
             if (findViewById(R.id.location_detail_container) != null) {
                 // The detail container view will be present only in the
@@ -82,10 +80,6 @@ public class LocationListActivity extends FragmentActivity
         handleIntent(getIntent());
     }
 
-    private void doSearch(String query) {
-        Toast.makeText(this, query, Toast.LENGTH_LONG).show();
-    }
-
     @Override
     protected void onNewIntent(Intent intent) {
         setIntent(intent);
@@ -93,18 +87,16 @@ public class LocationListActivity extends FragmentActivity
     }
 
     private void handleIntent(Intent intent) {
-        String query = null;
+
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             query = intent.getStringExtra(SearchManager.QUERY);
             Toast.makeText(this, query, Toast.LENGTH_LONG).show();
-            //mSearchView.setQuery(query, false);
         }else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             query = intent.getStringExtra(SearchManager.EXTRA_DATA_KEY);
             Toast.makeText(this, query, Toast.LENGTH_LONG).show();
-           // mSearchView.setQuery(query, false);
         }
-        doSearch(query);
     }
+
     // sets location client up if needed
     private void setUpLocClientIfNeeded() {
         if (locClient == null) {
@@ -160,7 +152,6 @@ public class LocationListActivity extends FragmentActivity
 		 * Called by Location Services if the attempt to Location Services
 		 * fails.
 		 */
-
 		/*
 		 * Google Play services can resolve some errors it detects. If the error
 		 * has a resolution, try sending an Intent to start a Google Play
@@ -296,4 +287,16 @@ public class LocationListActivity extends FragmentActivity
             startActivity(detailIntent);
         }
     }
+
+    @Override
+    public String getQuery() {
+        return query;
+    }
+
+    @Override
+    public String getLatLng() {
+        return Double.toString(mloc.getLatitude()) + "," + Double.toString(mloc.getLongitude());
+    }
+
+
 }

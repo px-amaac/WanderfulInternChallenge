@@ -8,5 +8,9 @@
     <string name="search_places">Search</string>
     <string name="no_service">No Google Play Services Available.</string>
     <string name="loc_failed">Unable to connect to Location Services</string>
-
+    <string name="places_api_key">AIzaSyDWUuQj_GS_stpWB0oqf7FzaGiuL6-7UbE</string>
+    <string name="data_not_there">You are Connected but your query or location may be invalid.</string>
+    <string name="data_loaded">Data Loaded</string>
+    <string name="invalid_url">Invalid URL.</string>
+    <string name="query_empty">Your search query returned 0 results.</string>
 </resources>
