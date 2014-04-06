@@ -6,5 +6,7 @@
     <string name="search">Search</string>
     <string name="places_search">Places Search</string>
     <string name="search_places">Search</string>
+    <string name="no_service">No Google Play Services Available.</string>
+    <string name="loc_failed">Unable to connect to Location Services</string>
 
 </resources>
