@@ -4,6 +4,8 @@
     android:label="@string/places_search"
     android:hint="@string/search_places"
     android:searchSuggestAuthority="com.doubleacoding.wanderfulinternchallenge.places_provider"
+    android:searchSuggestThreshold="3"
+    android:searchSuggestIntentAction = "android.intent.action.VIEW"
     android:searchMode="queryRewriteFromText">
 
     </searchable>

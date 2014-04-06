@@ -45,6 +45,8 @@ public class PlacesProvider extends ContentProvider {
     private static final String[] SUGGESTION_COLUMNS = {
             BaseColumns._ID,                                //id to match clicks
             SearchManager.SUGGEST_COLUMN_TEXT_1,            //column for the suggestiojn
+            SearchManager.SUGGEST_COLUMN_INTENT_EXTRA_DATA
+
     };
 
     //build up URI matcher
@@ -120,8 +122,11 @@ public class PlacesProvider extends ContentProvider {
 
             for(int i = 0; i < predictionsArray.length(); i++){
                 resultItem = new ArrayList<String>();
+                JSONArray terms = predictionsArray.getJSONObject(i).getJSONArray("terms");
+
                 resultItem.add(Integer.toString(i)); //give cursor item an id
-                resultItem.add(predictionsArray.getJSONObject(i).getString("description")); //suggestion string
+                resultItem.add(terms.getJSONObject(0).getString("value")); //suggestion string
+                resultItem.add(terms.getJSONObject(0).getString("value"));
                 result.add(resultItem); //add the item to the list to populate the cursor.
             }
         } catch (JSONException e) {

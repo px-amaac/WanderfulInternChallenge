@@ -48,6 +48,7 @@ public class LocationListActivity extends FragmentActivity
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
+    private SearchView mSearchView;
     private boolean mTwoPane;
     private Location mloc;
 
@@ -78,10 +79,32 @@ public class LocationListActivity extends FragmentActivity
             }
         }
 
-        // TODO: If exposing deep links into your app, handle intents here.
+        handleIntent(getIntent());
     }
 
+    private void doSearch(String query) {
+        Toast.makeText(this, query, Toast.LENGTH_LONG).show();
+    }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        setIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        String query = null;
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            query = intent.getStringExtra(SearchManager.QUERY);
+            Toast.makeText(this, query, Toast.LENGTH_LONG).show();
+            //mSearchView.setQuery(query, false);
+        }else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+            query = intent.getStringExtra(SearchManager.EXTRA_DATA_KEY);
+            Toast.makeText(this, query, Toast.LENGTH_LONG).show();
+           // mSearchView.setQuery(query, false);
+        }
+        doSearch(query);
+    }
     // sets location client up if needed
     private void setUpLocClientIfNeeded() {
         if (locClient == null) {
@@ -241,7 +264,7 @@ public class LocationListActivity extends FragmentActivity
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.main, menu);
         SearchManager mSearchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView mSearchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
+        mSearchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
         mSearchView.setSearchableInfo(mSearchManager.getSearchableInfo(getComponentName()));
         mSearchView.setIconifiedByDefault(false);
         return super.onCreateOptionsMenu(menu);
