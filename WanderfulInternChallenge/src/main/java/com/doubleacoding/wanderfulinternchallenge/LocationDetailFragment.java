@@ -1,11 +1,8 @@
 package com.doubleacoding.wanderfulinternchallenge;
 
-import android.app.PendingIntent;
-import android.content.Intent;
-import android.net.Uri;
+import android.app.Fragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,6 +11,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.model.LatLng;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -21,6 +26,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
+
 
 /**
  * A fragment representing a single Location detail screen.
@@ -37,8 +43,11 @@ public class LocationDetailFragment extends Fragment {
 
     private String reference;
 
+    MapView mapView;
+    GoogleMap map;
 
-    /**
+
+     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
@@ -76,8 +85,19 @@ public class LocationDetailFragment extends Fragment {
             Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_location_detail, container, false);
 
-        // Show the dummy content as text in a TextView.
+        mapView = (MapView) rootView.findViewById(R.id.mapView);
+        mapView.onCreate(savedInstanceState);
+        mapView.onResume();//needed to get the map to display immediately
 
+        try {
+            MapsInitializer.initialize(getActivity());
+        } catch (GooglePlayServicesNotAvailableException e) {
+            e.printStackTrace();
+        }
+
+        map = mapView.getMap();
+
+        map.setMyLocationEnabled(true);
 
         return rootView;
     }
@@ -126,17 +146,13 @@ public class LocationDetailFragment extends Fragment {
                 Toast.makeText(getActivity(), getResources().getString(R.string.query_empty), Toast.LENGTH_LONG).show();
                 getActivity().onBackPressed();
             } else{
-                Toast.makeText(getActivity(), item.get("lat"), Toast.LENGTH_LONG).show();
+                    CameraUpdate center=
+                            CameraUpdateFactory.newLatLng(new LatLng(Double.parseDouble(item.get("lat")), Double.parseDouble(item.get("lng"))));
+                    CameraUpdate zoom=CameraUpdateFactory.zoomTo(15);
+                    map.moveCamera(center);
+                    map.animateCamera(zoom);
             }
         }
-    }
-
-    /*
-     * Create a PendingIntent that triggers an IntentService in your
-     * app when a geofence transition occurs.
-     */
-    private PendingIntent createPendingIntent(String url) {
-
     }
 
     // Given a string representation of a URL, sets up a connection and gets
@@ -156,5 +172,29 @@ public class LocationDetailFragment extends Fragment {
         results = targetParse.readStream(JSONStream);
         connection.disconnect();
         return results;
+    }
+    //in order to display map view in fragment we need to override all of the map view lifecycle changes
+    @Override
+    public void onResume() {
+        super.onResume();
+        mapView.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mapView.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mapView.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mapView.onLowMemory();
     }
 }

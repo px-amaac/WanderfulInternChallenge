@@ -80,6 +80,10 @@ public final class GeofenceUtils {
 
     public static final String KEY_RADIUS = "com.example.android.geofence.KEY_RADIUS";
 
+    public static final String KEY_NOTIFICATION_TEXT = "com.example.android.geofence.KEY_NOTIFICATION_TEXT";
+
+    public static final String KEY_URL = "com.example.android.geofence.KEY_URL";
+
     public static final String KEY_EXPIRATION_DURATION =
             "com.example.android.geofence.KEY_EXPIRATION_DURATION";
 
