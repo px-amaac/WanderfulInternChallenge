@@ -17,7 +17,6 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
-import com.doubleacoding.wanderfulinternchallenge.dummy.DummyContent;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -206,6 +205,7 @@ public class LocationListFragment extends ListFragment implements GooglePlayServ
     public interface Callbacks {
         /**
          * Callback for when an item has been selected.
+         * @param id
          */
         public void onItemSelected(String id);
 
@@ -323,7 +323,7 @@ public class LocationListFragment extends ListFragment implements GooglePlayServ
 
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
-        mCallbacks.onItemSelected(DummyContent.ITEMS.get(position).id);
+        mCallbacks.onItemSelected(data.get(position).get("reference"));
     }
 
     @Override
@@ -384,8 +384,9 @@ public class LocationListFragment extends ListFragment implements GooglePlayServ
                 Toast.makeText(getActivity(), getResources().getString(R.string.query_empty), Toast.LENGTH_LONG).show();
                 getActivity().onBackPressed();
             } else{
+                data = items;
                 ListViewLoaderTask lvLoader = new ListViewLoaderTask();
-                lvLoader.execute(items);
+                lvLoader.execute(data);
             }
         }
     }
@@ -420,7 +421,6 @@ public class LocationListFragment extends ListFragment implements GooglePlayServ
             } else {
                 ((SimpleAdapter) getListAdapter())
                         .notifyDataSetChanged();
-
             }
         }
     }

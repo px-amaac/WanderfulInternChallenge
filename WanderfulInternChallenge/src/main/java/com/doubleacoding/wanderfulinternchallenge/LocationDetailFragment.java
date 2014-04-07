@@ -1,12 +1,26 @@
 package com.doubleacoding.wanderfulinternchallenge;
 
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-import com.doubleacoding.wanderfulinternchallenge.dummy.DummyContent;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.HashMap;
 
 /**
  * A fragment representing a single Location detail screen.
@@ -21,10 +35,8 @@ public class LocationDetailFragment extends Fragment {
      */
     public static final String ARG_ITEM_ID = "item_id";
 
-    /**
-     * The dummy content this fragment is presenting.
-     */
-    private DummyContent.DummyItem mItem;
+    private String reference;
+
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -36,12 +48,26 @@ public class LocationDetailFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
-            mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
+            reference = getArguments().getString(ARG_ITEM_ID);
+
+            String URL = "https://maps.googleapis.com/maps/api/place/details/json?reference=";
+            StringBuilder sBuilder = new StringBuilder(URL);
+            try {
+                sBuilder.append(URLEncoder.encode(reference, "utf8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            String DEFAULT_RADIUS_SENSOR_ADD_KEY = "&sensor=true&key=";
+            sBuilder.append(DEFAULT_RADIUS_SENSOR_ADD_KEY);
+            sBuilder.append(getResources().getString(R.string.places_api_key));
+            if (this.isAdded())
+                new GetTargetTask().execute(sBuilder.toString());
         }
     }
 
@@ -54,5 +80,81 @@ public class LocationDetailFragment extends Fragment {
 
 
         return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.map_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() ==  R.id.set_geofence) {
+            //TODO: Request the geofence that is being displayed.
+            return true;
+        }else
+        return super.onOptionsItemSelected(item);
+
+    }
+
+    // Uses AsyncTask to create a task away from the main UI thread. This task takes a
+    // query string and uses it to create an HttpUrlConnection. Once the connection
+    // has been established, the AsyncTask downloads the contents of the JSON as
+    // an InputStream. Finally, the InputStream is converted into a JSON, which is
+    // displayed in the UI by the AsyncTask's onPostExecute method.
+    private class GetTargetTask extends AsyncTask<String, Void, String> {
+        HashMap<String, String> item = null;
+
+        @Override
+        protected String doInBackground(String... urls) {
+            try{
+                item = downloadUrl(urls[0]);
+                if (item == null) {
+                    return getResources().getString(R.string.data_not_there);
+                } else
+                    return getResources().getString(R.string.data_loaded);
+            }catch (IOException e) {
+                return "Invalid URL: " + urls[0];
+            }
+
+        }
+        @Override
+        protected void onPostExecute(String result) {
+            Toast.makeText(getActivity(), result, Toast.LENGTH_LONG).show();
+            if (item == null || item.isEmpty()) {
+                Toast.makeText(getActivity(), getResources().getString(R.string.query_empty), Toast.LENGTH_LONG).show();
+                getActivity().onBackPressed();
+            } else{
+                Toast.makeText(getActivity(), item.get("lat"), Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    /*
+     * Create a PendingIntent that triggers an IntentService in your
+     * app when a geofence transition occurs.
+     */
+    private PendingIntent createPendingIntent(String url) {
+
+    }
+
+    // Given a string representation of a URL, sets up a connection and gets
+    // an input stream.
+    private HashMap<String, String> downloadUrl(String urlString) throws IOException {
+        HashMap<String, String> results;
+        URL url = new URL(urlString);
+        TargetParser targetParse = new TargetParser();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setReadTimeout(100000 /* milliseconds */);
+        connection.setConnectTimeout(150000 /* milliseconds */);
+        connection.setRequestMethod("GET");
+        connection.setDoInput(true);
+        // Starts the query
+        connection.connect();
+        InputStream JSONStream = connection.getInputStream();
+        results = targetParse.readStream(JSONStream);
+        connection.disconnect();
+        return results;
     }
 }
