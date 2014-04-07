@@ -1,14 +1,9 @@
 package com.doubleacoding.wanderfulinternchallenge;
 
 import android.app.ActionBar;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentSender;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
@@ -18,9 +13,7 @@ import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.location.LocationClient;
 
 
 /**
@@ -39,25 +32,23 @@ import com.google.android.gms.location.LocationClient;
  * to listen for item selections.
  */
 public class LocationListActivity extends FragmentActivity
-        implements LocationListFragment.Callbacks, GooglePlayServicesClient.ConnectionCallbacks, GooglePlayServicesClient.OnConnectionFailedListener {
+        implements LocationListFragment.Callbacks {
 
     protected static final String TAG_ERROR_DIALOG_FRAGMENT = "errorDialog";
-    private LocationClient locClient;
+
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
     private SearchView mSearchView;
     private boolean mTwoPane;
-    private Location mloc;
-    private String query;
+
+    private String query = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location_list);
-        locClient =new LocationClient(this, this, this);
-
 
         ActionBar aB = getActionBar();
         aB.setDisplayHomeAsUpEnabled(true);
@@ -80,6 +71,8 @@ public class LocationListActivity extends FragmentActivity
         handleIntent(getIntent());
     }
 
+
+
     @Override
     protected void onNewIntent(Intent intent) {
         setIntent(intent);
@@ -97,14 +90,7 @@ public class LocationListActivity extends FragmentActivity
         }
     }
 
-    // sets location client up if needed
-    private void setUpLocClientIfNeeded() {
-        if (locClient == null) {
-            locClient = new LocationClient(getApplicationContext(), this,
-                    this);
-        }
 
-    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -124,7 +110,7 @@ public class LocationListActivity extends FragmentActivity
         if (status == ConnectionResult.SUCCESS) {
             return (true);
         } else if (GooglePlayServicesUtil.isUserRecoverableError(status)) {
-            ErrorDialogFragment.newInstance(status)
+            LocationListFragment.ErrorDialogFragment.newInstance(status)
                     .show(getFragmentManager(),
                             TAG_ERROR_DIALOG_FRAGMENT);
         }else {
@@ -132,121 +118,6 @@ public class LocationListActivity extends FragmentActivity
             finish();
         }
         return(false);
-    }
-
-    @Override
-    public void onConnected(Bundle bundle) {
-        mloc=locClient.getLastLocation();
-    }
-
-    @Override
-    public void onDisconnected() {
-
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        Toast.makeText(getApplicationContext(), getString(R.string.loc_failed),
-                Toast.LENGTH_SHORT).show();
-		/*
-		 * Called by Location Services if the attempt to Location Services
-		 * fails.
-		 */
-		/*
-		 * Google Play services can resolve some errors it detects. If the error
-		 * has a resolution, try sending an Intent to start a Google Play
-		 * services activity that can resolve error.
-		 */
-        if (connectionResult.hasResolution()) {
-            try {
-
-                // Start an Activity that tries to resolve the error
-                connectionResult.startResolutionForResult(this,
-                        LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST);
-
-				/*
-				 * Thrown if Google Play services canceled the original
-				 * PendingIntent
-				 */
-
-            } catch (IntentSender.SendIntentException e) {
-
-                // Log the error
-                e.printStackTrace();
-            }
-        } else {
-
-            // If no resolution is available, display a dialog to the user with
-            // the error.
-            showErrorDialog(connectionResult.getErrorCode());
-        }
-    }
-
-
-    public static class ErrorDialogFragment extends DialogFragment {
-        static final String ARG_STATUS = "status";
-        private Dialog	mDialog;
-
-        static ErrorDialogFragment newInstance(int status) {
-            Bundle args = new Bundle();
-            args.putInt(ARG_STATUS, status);
-            ErrorDialogFragment result = new ErrorDialogFragment();
-            result.setArguments(args);
-            return (result);
-        }
-        /**
-         * Set the dialog to display
-         *
-         * @param dialog
-         *            An error dialog
-         */
-        public void setDialog(Dialog dialog) {
-            mDialog = dialog;
-        }
-
-
-
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            Bundle args=getArguments();
-            return GooglePlayServicesUtil.getErrorDialog(args.getInt(ARG_STATUS),
-                    getActivity(), 0);
-        }
-        @Override
-        public void onDismiss(DialogInterface dlg) {
-            if (getActivity() != null) {
-                getActivity().finish();
-            }
-        }
-    }
-//    end Commonsware code.
-
-    /**
-     * Show a dialog returned by Google Play services for the connection error
-     * code
-     *
-     * @param errorCode
-     *            An error code returned from onConnectionFailed
-     */
-    private void showErrorDialog(int errorCode) {
-
-        // Get the error dialog from Google Play services
-        Dialog errorDialog = GooglePlayServicesUtil.getErrorDialog(errorCode,
-                this, LocationUtils.CONNECTION_FAILURE_RESOLUTION_REQUEST);
-
-        // If Google Play services can provide an error dialog
-        if (errorDialog != null) {
-
-            // Create a new DialogFragment in which to show the error dialog
-            ErrorDialogFragment errorFragment = new ErrorDialogFragment();
-
-            // Set the dialog in the DialogFragment
-            errorFragment.setDialog(errorDialog);
-
-            // Show the error dialog in the DialogFragment
-            errorFragment.show(getFragmentManager(),
-                    LocationUtils.APPTAG);
-        }
     }
 
     @Override
@@ -293,10 +164,7 @@ public class LocationListActivity extends FragmentActivity
         return query;
     }
 
-    @Override
-    public String getLatLng() {
-        return Double.toString(mloc.getLatitude()) + "," + Double.toString(mloc.getLongitude());
-    }
+
 
 
 }
