@@ -37,7 +37,7 @@ import java.util.List;
  * to listen for item selections.
  */
 public class LocationListActivity extends FragmentActivity
-        implements LocationListFragment.Callbacks {
+        implements LocationListFragment.Callbacks{
 
     protected static final String TAG_ERROR_DIALOG_FRAGMENT = "errorDialog";
     LocationDetailFragment detailFrag;
@@ -174,6 +174,9 @@ public class LocationListActivity extends FragmentActivity
         return query;
     }
 
-
-
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        query = null;
+    }
 }

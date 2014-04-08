@@ -245,11 +245,18 @@ public class LocationListFragment extends ListFragment implements GooglePlayServ
                 && savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
             setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
         }
+        getgeofences();
+    }
+
+    private void getgeofences() {
         data = mPrefs.getGeofences();
-        if(data != null && !data.isEmpty()){
-            ListViewLoaderTask lvLoader = new ListViewLoaderTask();
-            lvLoader.execute(data);
-        }
+        updateThisList();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getgeofences();
     }
 
     @Override
@@ -267,6 +274,7 @@ public class LocationListFragment extends ListFragment implements GooglePlayServ
     public void onStart(){
         super.onStart();
         updateConnectedFlags();
+        data = null;
         new SetupLocTask().execute();
 
     }
@@ -297,7 +305,7 @@ public class LocationListFragment extends ListFragment implements GooglePlayServ
     private void queryPlaces() throws UnsupportedEncodingException {
         String query = mCallbacks.getQuery();
         String latlng = getLatLng();
-        if(query != null && latlng != null) {
+        if(query != null && !query.isEmpty() && latlng != null) {
             if (wifiConnected || mobileConnected) {
 
                 String URL = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?keyword=";

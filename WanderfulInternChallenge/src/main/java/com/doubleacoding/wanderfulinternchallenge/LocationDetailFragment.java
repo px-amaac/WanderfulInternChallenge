@@ -59,8 +59,7 @@ public class LocationDetailFragment extends SupportMapFragment {
     private SimpleGeofenceStore mPrefs;
     // Add geofences handler
     private GeofenceRequester mGeofenceRequester;
-
-
+    private GeofenceRemover mGeofenceRemover;
 
      /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -68,6 +67,7 @@ public class LocationDetailFragment extends SupportMapFragment {
      */
     public LocationDetailFragment() {
     }
+
 
 
     @Override
@@ -82,6 +82,7 @@ public class LocationDetailFragment extends SupportMapFragment {
 
         // Instantiate a Geofence requester
         mGeofenceRequester = new GeofenceRequester(getActivity());
+        mGeofenceRemover = new GeofenceRemover(getActivity());
 
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
@@ -118,6 +119,20 @@ public class LocationDetailFragment extends SupportMapFragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.map_menu, menu);
+        MenuItem setgeo = menu.findItem(R.id.set_geofence);
+        MenuItem removegeo = menu.findItem(R.id.remove_geofence);
+        List<String> fences = mPrefs.getGeofenceList();
+        if(fences != null && fences.contains(reference)){
+            setgeo.setVisible(false);
+            removegeo.setVisible(true);
+        }
+        else{
+            setgeo.setVisible(true);
+            removegeo.setVisible(false);
+        }
+
+
+
     }
 
     @Override
@@ -134,10 +149,30 @@ public class LocationDetailFragment extends SupportMapFragment {
                         Toast.LENGTH_LONG).show();
             }
             mPrefs.setGeofence(locationItem.get("reference"), mGeofence);
+            getActivity().onBackPressed();
+            return true;
+        }else if (item.getItemId() == R.id.remove_geofence){
+            List<String> mGeofenceIdsToRemove = new ArrayList<String>();
 
+            mGeofenceIdsToRemove.add(reference);
+
+            // Try to remove the geofence
+            try {
+                mGeofenceRemover.removeGeofencesById(mGeofenceIdsToRemove);
+
+                // Catch errors with the provided geofence IDs
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (UnsupportedOperationException e) {
+                // Notify user that previous request hasn't finished.
+                Toast.makeText(getActivity(), R.string.remove_geofences_already_requested_error,
+                        Toast.LENGTH_LONG).show();
+            }
+            mPrefs.clearGeofence(locationItem.get("reference"));
+            getActivity().onBackPressed();
             return true;
         }else
-        return super.onOptionsItemSelected(item);
+            return super.onOptionsItemSelected(item);
 
     }
 

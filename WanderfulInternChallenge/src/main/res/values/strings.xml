@@ -90,4 +90,5 @@
         Received an unknown activity request code %1$d in onActivityResult.
     </string>
     <string name="no_results">No Results Available</string>
+    <string name="remove_geofence">Remove Geofence</string>
 </resources>

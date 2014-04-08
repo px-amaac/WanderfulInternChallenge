@@ -133,18 +133,21 @@ public class SimpleGeofenceStore {
             return null;
         }
     }
-    private List<String> convertGeofences(String geofences){
-        //convert string array to list before it is passed back.
-        return Arrays.asList(geofences.split(","));
+
+    public List<String> getGeofenceList(){
+        String tmp = mPrefs.getString(GEOFENCE_IDS, null);
+        if(tmp != null) {
+            return Arrays.asList(tmp.split(","));
+        }
+        else
+            return null;
     }
 
     /*method gets all geofences stored in the preferences.*/
     public List<HashMap<String, String>> getGeofences(){
-        String tmp = mPrefs.getString(GEOFENCE_IDS, null);
         List<HashMap<String, String>> result = new ArrayList<HashMap<String, String>>();
-        List<String> refs;
-        if(tmp != null){
-            refs = Arrays.asList(tmp.split(","));
+        List<String> refs = getGeofenceList();
+        if(refs != null){
             for(String s : refs){
                 HashMap<String, String> mapTmp = getGeofence(s).toHashMap();
                 mapTmp.put("reference", s);
@@ -171,9 +174,9 @@ public class SimpleGeofenceStore {
         Editor editor = mPrefs.edit();
         geofenceReference = mPrefs.getString(GEOFENCE_IDS, null);
         List<String> geofences = new ArrayList<String>();
-        //if geofences in preferences then convert them to a list.
-        if(geofenceReference != null){
-             geofences.addAll(convertGeofences(geofenceReference));
+        List<String> tmp = getGeofenceList();
+        if(tmp != null){
+            geofences.addAll(tmp);
         }
         //if no geofences then this is the first one. add it to the references and put references back in preferences.
         if(geofenceReference == null || geofences.isEmpty())
@@ -181,7 +184,7 @@ public class SimpleGeofenceStore {
             geofenceReference = (String) geofence.getId();
         }else
         {
-            geofences.add((String) geofence.getId());
+            geofences.add(geofence.getId());
             //convert to csv to be put back into shared preferences.
             geofenceReference = geofences.toString().replace("[", "").replace("]", "")
                     .replace(", ", ",");
@@ -228,6 +231,7 @@ public class SimpleGeofenceStore {
 
         // Remove a flattened geofence object from storage by removing all of its keys
         Editor editor = mPrefs.edit();
+        editor.remove(GEOFENCE_IDS);
         editor.remove(getGeofenceFieldKey(id, GeofenceUtils.KEY_NAME));
         editor.remove(getGeofenceFieldKey(id, GeofenceUtils.KEY_LATITUDE));
         editor.remove(getGeofenceFieldKey(id, GeofenceUtils.KEY_LONGITUDE));
