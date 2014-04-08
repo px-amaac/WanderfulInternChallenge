@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -35,7 +36,7 @@ public class LocationListActivity extends FragmentActivity
         implements LocationListFragment.Callbacks {
 
     protected static final String TAG_ERROR_DIALOG_FRAGMENT = "errorDialog";
-
+    LocationDetailFragment detailFrag;
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -142,21 +143,25 @@ public class LocationListActivity extends FragmentActivity
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
             // fragment transaction.
-            Bundle arguments = new Bundle();
-            arguments.putString(LocationDetailFragment.ARG_ITEM_ID, id);
-            LocationDetailFragment fragment = new LocationDetailFragment();
-            fragment.setArguments(arguments);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.location_detail_container, fragment)
-                    .commit();
+            FragmentManager fm = getSupportFragmentManager();
 
-        } else {
-            // In single-pane mode, simply start the detail activity
-            // for the selected item ID.
-            Intent detailIntent = new Intent(this, LocationDetailActivity.class);
-            detailIntent.putExtra(LocationDetailFragment.ARG_ITEM_ID, id);
-            startActivity(detailIntent);
-        }
+            detailFrag = (LocationDetailFragment) fm.findFragmentByTag(LocationDetailFragment.TAG);
+            if(detailFrag == null){
+                Bundle arguments = new Bundle();
+                arguments.putString(LocationDetailFragment.ARG_ITEM_ID, id);
+                detailFrag = new LocationDetailFragment();
+                detailFrag.setArguments(arguments);
+            }
+                fm.beginTransaction()
+                        .replace(R.id.location_detail_container, detailFrag)
+                        .commit();
+            } else {
+                // In single-pane mode, simply start the detail activity
+                // for the selected item ID.
+                Intent detailIntent = new Intent(this, LocationDetailActivity.class);
+                detailIntent.putExtra(LocationDetailFragment.ARG_ITEM_ID, id);
+                startActivity(detailIntent);
+            }
     }
 
     @Override
