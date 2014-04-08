@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -15,6 +16,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+
+import java.util.HashMap;
+import java.util.List;
 
 
 /**
@@ -43,8 +47,9 @@ public class LocationListActivity extends FragmentActivity
      */
     private SearchView mSearchView;
     private boolean mTwoPane;
-
+    private List<HashMap<String, String>> geofences = null;
     private String query = null;
+    private SharedPreferences mPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

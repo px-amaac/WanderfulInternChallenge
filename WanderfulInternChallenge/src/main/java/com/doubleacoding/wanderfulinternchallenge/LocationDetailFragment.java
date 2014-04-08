@@ -1,5 +1,6 @@
 package com.doubleacoding.wanderfulinternchallenge;
 
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
@@ -7,12 +8,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.android.gms.location.Geofence;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -23,7 +25,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
 /**
@@ -44,9 +48,18 @@ public class LocationDetailFragment extends SupportMapFragment {
 
     private String reference;
 
-    MapView mapView;
-    GoogleMap map;
-    Marker location;
+    private GoogleMap map;
+    private Marker location;
+    private TargetGeoFence mGeofence;
+    // Store a list of geofences to add
+    private List<Geofence> mCurrentGeofences;
+    // location item
+    private HashMap<String, String> locationItem;
+    // Persistent storage for geofences
+    private SimpleGeofenceStore mPrefs;
+    // Add geofences handler
+    private GeofenceRequester mGeofenceRequester;
+
 
 
      /**
@@ -61,6 +74,15 @@ public class LocationDetailFragment extends SupportMapFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        // Instantiate a new geofence storage area
+        mPrefs = new SimpleGeofenceStore(getActivity());
+
+        // Instantiate the current List of geofences
+        mCurrentGeofences = new ArrayList<Geofence>();
+
+        // Instantiate a Geofence requester
+        mGeofenceRequester = new GeofenceRequester(getActivity());
+
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             // Load the dummy content specified by the fragment
@@ -101,7 +123,18 @@ public class LocationDetailFragment extends SupportMapFragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() ==  R.id.set_geofence) {
-            //TODO: Request the geofence that is being displayed.
+
+            mCurrentGeofences.add(mGeofence.toGeofence());
+            try {
+                // Try to add geofences
+                mGeofenceRequester.addGeofences(mCurrentGeofences, locationItem.get("url"));
+            } catch (UnsupportedOperationException e) {
+                // Notify user that previous request hasn't finished.
+                Toast.makeText(getActivity(), R.string.add_geofences_already_requested_error,
+                        Toast.LENGTH_LONG).show();
+            }
+            mPrefs.setGeofence(locationItem.get("reference"), mGeofence);
+
             return true;
         }else
         return super.onOptionsItemSelected(item);
@@ -114,13 +147,11 @@ public class LocationDetailFragment extends SupportMapFragment {
     // an InputStream. Finally, the InputStream is converted into a JSON, which is
     // displayed in the UI by the AsyncTask's onPostExecute method.
     private class GetTargetTask extends AsyncTask<String, Void, String> {
-        HashMap<String, String> item = null;
-
         @Override
         protected String doInBackground(String... urls) {
             try{
-                item = downloadUrl(urls[0]);
-                if (item == null) {
+                locationItem = downloadUrl(urls[0]);
+                if (locationItem == null) {
                     return getResources().getString(R.string.data_not_there);
                 } else
                     return getResources().getString(R.string.data_loaded);
@@ -132,30 +163,53 @@ public class LocationDetailFragment extends SupportMapFragment {
         @Override
         protected void onPostExecute(String result) {
             Toast.makeText(getActivity(), result, Toast.LENGTH_LONG).show();
-            if (item == null || item.isEmpty()) {
+            if (locationItem == null || locationItem.isEmpty()) {
                 Toast.makeText(getActivity(), getResources().getString(R.string.query_empty), Toast.LENGTH_LONG).show();
                 getActivity().onBackPressed();
             } else{
-                Double lat = Double.parseDouble(item.get("lat"));
-                Double lng = Double.parseDouble(item.get("lng"));
+                //setup the camera to zoom on location selected
+                Double lat = Double.parseDouble(locationItem.get("lat"));
+                Double lng = Double.parseDouble(locationItem.get("lng"));
                 LatLng latlng = new LatLng(lat, lng);
                 location = map.addMarker(new MarkerOptions()
                         .position(latlng)
-                        .title(item.get("name"))
+                        .title(locationItem.get("name"))
                         .draggable(false)
                         .icon(BitmapDescriptorFactory
                                 .defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                        .snippet(item.get("vicinity")));
+                        .snippet(locationItem.get("vicinity")));
                 location.showInfoWindow();
                 CameraPosition cameraPosition = new CameraPosition.Builder()
                         .target(latlng)      // Sets the center of the map to Mountain View
-                        .zoom(15)                   // Sets the zoom
+                        .zoom(10)                   // Sets the zoom
                         .bearing(90)                // Sets the orientation of the camera to east
                         .tilt(30)                   // Sets the tilt of the camera to 30 degrees
                         .build();                   // Creates a CameraPosition from the builder
                 map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                setupGeofence(locationItem);
             }
         }
+    }
+    private void setupGeofence(HashMap<String, String> item){
+        mGeofence = new TargetGeoFence(
+                item.get("reference")
+                , item.get("name")
+                , Double.parseDouble(item.get("lat"))
+                , Double.parseDouble(item.get("lng"))
+                , 8046 //radius set to 5 miles
+                , item.get("url")
+                , item.get("vicinity")
+                , Geofence.NEVER_EXPIRE
+                , Geofence.GEOFENCE_TRANSITION_ENTER);
+
+        CircleOptions circleOptions = new CircleOptions()
+                .center(new LatLng(Double.parseDouble(item.get("lat")), Double.parseDouble(item.get("lng"))))
+                //.radius(8046)
+                .radius(50)
+                .fillColor(0x40ff0000)
+                .strokeColor(Color.TRANSPARENT)
+                .strokeWidth(2);
+        map.addCircle(circleOptions);
     }
 
     // Given a string representation of a URL, sets up a connection and gets

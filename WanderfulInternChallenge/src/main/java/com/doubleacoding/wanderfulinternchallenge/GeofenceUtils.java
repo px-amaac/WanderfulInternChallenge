@@ -34,65 +34,66 @@ public final class GeofenceUtils {
 
     // Intent actions
     public static final String ACTION_CONNECTION_ERROR =
-            "com.example.android.geofence.ACTION_CONNECTION_ERROR";
+            "com.doubleacoding.wanderfulinternchallenge.ACTION_CONNECTION_ERROR";
 
     public static final String ACTION_CONNECTION_SUCCESS =
-            "com.example.android.geofence.ACTION_CONNECTION_SUCCESS";
+            "com.doubleacoding.wanderfulinternchallenge.ACTION_CONNECTION_SUCCESS";
 
     public static final String ACTION_GEOFENCES_ADDED =
-            "com.example.android.geofence.ACTION_GEOFENCES_ADDED";
+            "com.doubleacoding.wanderfulinternchallenge.ACTION_GEOFENCES_ADDED";
 
     public static final String ACTION_GEOFENCES_REMOVED =
-            "com.example.android.geofence.ACTION_GEOFENCES_DELETED";
+            "com.doubleacoding.wanderfulinternchallenge.ACTION_GEOFENCES_DELETED";
 
     public static final String ACTION_GEOFENCE_ERROR =
-            "com.example.android.geofence.ACTION_GEOFENCES_ERROR";
+            "com.doubleacoding.wanderfulinternchallenge.ACTION_GEOFENCES_ERROR";
 
     public static final String ACTION_GEOFENCE_TRANSITION =
-            "com.example.android.geofence.ACTION_GEOFENCE_TRANSITION";
+            "com.doubleacoding.wanderfulinternchallenge.ACTION_GEOFENCE_TRANSITION";
 
     public static final String ACTION_GEOFENCE_TRANSITION_ERROR =
-                    "com.example.android.geofence.ACTION_GEOFENCE_TRANSITION_ERROR";
+                    "com.doubleacoding.wanderfulinternchallenge.ACTION_GEOFENCE_TRANSITION_ERROR";
 
     // The Intent category used by all Location Services sample apps
     public static final String CATEGORY_LOCATION_SERVICES =
-                    "com.example.android.geofence.CATEGORY_LOCATION_SERVICES";
+                    "com.doubleacoding.wanderfulinternchallenge.CATEGORY_LOCATION_SERVICES";
 
     // Keys for extended data in Intents
     public static final String EXTRA_CONNECTION_CODE =
                     "com.example.android.EXTRA_CONNECTION_CODE";
 
     public static final String EXTRA_CONNECTION_ERROR_CODE =
-            "com.example.android.geofence.EXTRA_CONNECTION_ERROR_CODE";
+            "com.doubleacoding.wanderfulinternchallenge.EXTRA_CONNECTION_ERROR_CODE";
 
     public static final String EXTRA_CONNECTION_ERROR_MESSAGE =
-            "com.example.android.geofence.EXTRA_CONNECTION_ERROR_MESSAGE";
+            "com.doubleacoding.wanderfulinternchallenge.EXTRA_CONNECTION_ERROR_MESSAGE";
 
     public static final String EXTRA_GEOFENCE_STATUS =
-            "com.example.android.geofence.EXTRA_GEOFENCE_STATUS";
+            "com.doubleacoding.wanderfulinternchallenge.EXTRA_GEOFENCE_STATUS";
 
     /*
      * Keys for flattened geofences stored in SharedPreferences
      */
-    public static final String KEY_LATITUDE = "com.example.android.geofence.KEY_LATITUDE";
+    public static final String KEY_NAME = "name";
+    public static final String KEY_LATITUDE = "com.doubleacoding.wanderfulinternchallenge.KEY_LATITUDE";
 
-    public static final String KEY_LONGITUDE = "com.example.android.geofence.KEY_LONGITUDE";
+    public static final String KEY_LONGITUDE = "com.doubleacoding.wanderfulinternchallenge.KEY_LONGITUDE";
 
-    public static final String KEY_RADIUS = "com.example.android.geofence.KEY_RADIUS";
+    public static final String KEY_RADIUS = "com.doubleacoding.wanderfulinternchallenge.KEY_RADIUS";
 
-    public static final String KEY_NOTIFICATION_TEXT = "com.example.android.geofence.KEY_NOTIFICATION_TEXT";
+    public static final String KEY_NOTIFICATION_TEXT = "vicinity";
 
-    public static final String KEY_URL = "com.example.android.geofence.KEY_URL";
+    public static final String KEY_URL = "com.doubleacoding.wanderfulinternchallenge.KEY_URL";
 
     public static final String KEY_EXPIRATION_DURATION =
-            "com.example.android.geofence.KEY_EXPIRATION_DURATION";
+            "com.doubleacoding.wanderfulinternchallenge.KEY_EXPIRATION_DURATION";
 
     public static final String KEY_TRANSITION_TYPE =
-            "com.example.android.geofence.KEY_TRANSITION_TYPE";
+            "com.doubleacoding.wanderfulinternchallenge.KEY_TRANSITION_TYPE";
 
     // The prefix for flattened geofence keys
     public static final String KEY_PREFIX =
-            "com.example.android.geofence.KEY";
+            "com.doubleacoding.wanderfulinternchallenge.KEY";
 
     // Invalid values, used to test geofence storage when retrieving geofences
     public static final long INVALID_LONG_VALUE = -999l;

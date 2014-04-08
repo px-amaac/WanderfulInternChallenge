@@ -40,7 +40,7 @@ public class TargetParser {
         * vicinity
         * reference should not be displayed but used to update the detail view with another call.*/
     private HashMap<String, String> readItems(JsonReader reader) throws IOException {
-        final String[] names = {"geometry", "name", "url", "vicinity"};
+        final String[] names = {"geometry", "name", "reference","url", "vicinity"};
         HashMap<String, String> data = new HashMap<String, String>();
         reader.beginObject();
         while (reader.hasNext()) {
@@ -71,10 +71,15 @@ public class TargetParser {
             else if (name.equals(names[2])) {
                 data.put(names[2], reader.nextString());
             }
-            //vicinity
+            //url
             else if (name.equals(names[3])) {
                 data.put(names[3], reader.nextString());
-            } else
+            }//vicinity
+            else if (name.equals(names[4])) {
+                data.put(names[4], reader.nextString());
+            }
+
+            else
                 reader.skipValue();
         }
         reader.endObject();

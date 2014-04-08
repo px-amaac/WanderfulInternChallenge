@@ -58,6 +58,7 @@
 
         <activity android:name="LegalNoticesActivity">
         </activity>
+        <service android:name="com.doubleacoding.wanderfulinternchallenge.ReceiveTransitionsIntentService" android:exported="false"></service>
     </application>
 
 </manifest>

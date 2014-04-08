@@ -48,7 +48,7 @@ public class PlacesParser {
         * vicinity
         * reference should not be displayed but used to update the detail view with another call.*/
         private HashMap<String, String> readItems(JsonReader reader) throws IOException {
-            final String[] names = {"geometry", "name", "reference", "vicinity"};
+            final String[] names = {"geometry", GeofenceUtils.KEY_NAME, "reference", GeofenceUtils.KEY_NOTIFICATION_TEXT};
             HashMap<String, String> data = new HashMap<String, String>();
             reader.beginObject();
             while (reader.hasNext()) {

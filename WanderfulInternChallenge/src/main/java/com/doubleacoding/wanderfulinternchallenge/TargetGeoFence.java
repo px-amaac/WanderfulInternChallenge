@@ -2,6 +2,8 @@ package com.doubleacoding.wanderfulinternchallenge;
 
 import com.google.android.gms.location.Geofence;
 
+import java.util.HashMap;
+
 /*
  * Copyright (C) 2013 The Android Open Source Project
  *
@@ -25,6 +27,7 @@ public class TargetGeoFence {
 
         // Instance variables
         private final String mId;
+        private final String mName;
         private final double mLatitude;
         private final double mLongitude;
         private final float mRadius;
@@ -46,6 +49,7 @@ public class TargetGeoFence {
          */
         public TargetGeoFence(
                 String geofenceId,
+                String name,
                 double latitude,
                 double longitude,
                 float radius,
@@ -57,6 +61,7 @@ public class TargetGeoFence {
 
             // An identifier for the geofence
             this.mId = geofenceId;
+            this.mName = name;
 
             // Center of the geofence
             this.mLatitude = latitude;
@@ -82,6 +87,8 @@ public class TargetGeoFence {
         public String getId() {
             return mId;
         }
+    
+        public String getName() {return mName; }
 
         /**
          * Get the geofence latitude
@@ -145,13 +152,27 @@ public class TargetGeoFence {
         public Geofence toGeofence() {
             // Build a new Geofence object
             return new Geofence.Builder()
-                    .setRequestId(getId())
+                    .setRequestId(getId().substring(0,42))
                     .setTransitionTypes(mTransitionType)
                     .setCircularRegion(
                             getLatitude(),
                             getLongitude(),
                             getRadius())
+                    .setLoiteringDelay(5)
                     .setExpirationDuration(mExpirationDuration)
                     .build();
+        }
+
+        public HashMap<String, String> toHashMap(){
+            HashMap<String,String> result = new HashMap<String, String>();
+            result.put(GeofenceUtils.KEY_NAME, getName());
+            result.put(GeofenceUtils.KEY_LATITUDE, Double.toString(getLatitude()));
+            result.put(GeofenceUtils.KEY_LONGITUDE, Double.toString(getLongitude()));
+            result.put(GeofenceUtils.KEY_NOTIFICATION_TEXT, getNotificationText());
+            result.put(GeofenceUtils.KEY_URL, getUrl());
+            return result;
+
+
+
         }
     }

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -270,24 +269,14 @@ public class GeofenceRequester
      */
     private PendingIntent createRequestPendingIntent() {
 
-        // If the PendingIntent already exists
-        if (null != mGeofencePendingIntent) {
-
-            // Return the existing intent
-            return mGeofencePendingIntent;
-
-        // If no PendingIntent exists
-        } else {
-
-            // Create an Intent pointing to the IntentService
-            // Create an explicit Intent
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(mUrl));
-        /*
-         * Return the PendingIntent
-         */
-            return PendingIntent.getActivity(mActivity, 0, intent, 0);
-        }
+        Intent intent = new Intent(mActivity, ReceiveTransitionsIntentService.class);
+        intent.putExtra(LocationDetailFragment.ARG_ITEM_ID, mUrl);
+    /*
+     * Return the PendingIntent
+     */
+        return PendingIntent.getActivity(mActivity, 0, intent, 0);
     }
+
 
     /*
      * Implementation of OnConnectionFailedListener.onConnectionFailed

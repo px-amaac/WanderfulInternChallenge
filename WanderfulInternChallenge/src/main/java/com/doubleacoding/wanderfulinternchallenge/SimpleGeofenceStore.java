@@ -20,6 +20,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+
 /**
  * Storage for geofence values, implemented in SharedPreferences.
  * For a production app, use a content provider that's synced to the
@@ -29,6 +34,8 @@ public class SimpleGeofenceStore {
 
     // The SharedPreferences object in which geofences are stored
     private final SharedPreferences mPrefs;
+    private String geofenceReference;
+    public static final String GEOFENCE_IDS = "geofenceids";
 
     // The name of the resulting SharedPreferences
     private static final String SHARED_PREFERENCE_NAME =
@@ -40,6 +47,7 @@ public class SimpleGeofenceStore {
                 context.getSharedPreferences(
                         SHARED_PREFERENCE_NAME,
                         Context.MODE_PRIVATE);
+
     }
 
     /**
@@ -52,10 +60,14 @@ public class SimpleGeofenceStore {
      */
     public TargetGeoFence getGeofence(String id) {
 
+        String name = mPrefs.getString(getGeofenceFieldKey(id, GeofenceUtils.KEY_NAME), null);
+
         /*
          * Get the latitude for the geofence identified by id, or GeofenceUtils.INVALID_VALUE
          * if it doesn't exist
          */
+
+
         double lat = mPrefs.getFloat(
                 getGeofenceFieldKey(id, GeofenceUtils.KEY_LATITUDE),
                 GeofenceUtils.INVALID_FLOAT_VALUE);
@@ -113,13 +125,34 @@ public class SimpleGeofenceStore {
             transitionType != GeofenceUtils.INVALID_INT_VALUE) {
 
             // Return a true Geofence object
-            return new TargetGeoFence(id, lat, lng, radius, url,
+            return new TargetGeoFence(id, name, lat, lng, radius, url,
                     notificationText, expirationDuration, transitionType);
 
         // Otherwise, return null.
         } else {
             return null;
         }
+    }
+    private List<String> convertGeofences(String geofences){
+        //convert string array to list before it is passed back.
+        return Arrays.asList(geofences.split(","));
+    }
+
+    /*method gets all geofences stored in the preferences.*/
+    public List<HashMap<String, String>> getGeofences(){
+        String tmp = mPrefs.getString(GEOFENCE_IDS, null);
+        List<HashMap<String, String>> result = new ArrayList<HashMap<String, String>>();
+        List<String> refs;
+        if(tmp != null){
+            refs = Arrays.asList(tmp.split(","));
+            for(String s : refs){
+                HashMap<String, String> mapTmp = getGeofence(s).toHashMap();
+                mapTmp.put("reference", s);
+                result.add(mapTmp);
+            }
+            return result;
+        }
+        return null;
     }
 
     /**
@@ -136,8 +169,29 @@ public class SimpleGeofenceStore {
          * and non-concurrent
          */
         Editor editor = mPrefs.edit();
+        geofenceReference = mPrefs.getString(GEOFENCE_IDS, null);
+        List<String> geofences = new ArrayList<String>();
+        //if geofences in preferences then convert them to a list.
+        if(geofenceReference != null){
+             geofences.addAll(convertGeofences(geofenceReference));
+        }
+        //if no geofences then this is the first one. add it to the references and put references back in preferences.
+        if(geofenceReference == null || geofences.isEmpty())
+        {
+            geofenceReference = (String) geofence.getId();
+        }else
+        {
+            geofences.add((String) geofence.getId());
+            //convert to csv to be put back into shared preferences.
+            geofenceReference = geofences.toString().replace("[", "").replace("]", "")
+                    .replace(", ", ",");
+        }
+        editor.putString(GEOFENCE_IDS, geofenceReference);
 
         // Write the Geofence values to SharedPreferences
+
+        editor.putString(getGeofenceFieldKey(id, GeofenceUtils.KEY_NAME), (String) geofence.getName());
+
         editor.putFloat(
                 getGeofenceFieldKey(id, GeofenceUtils.KEY_LATITUDE),
                 (float) geofence.getLatitude());
@@ -149,6 +203,14 @@ public class SimpleGeofenceStore {
         editor.putFloat(
                 getGeofenceFieldKey(id, GeofenceUtils.KEY_RADIUS),
                 geofence.getRadius());
+
+        editor.putString(
+                getGeofenceFieldKey(id, GeofenceUtils.KEY_URL),
+                geofence.getUrl());
+
+        editor.putString(
+                getGeofenceFieldKey(id, GeofenceUtils.KEY_NOTIFICATION_TEXT),
+                geofence.getNotificationText());
 
         editor.putLong(
                 getGeofenceFieldKey(id, GeofenceUtils.KEY_EXPIRATION_DURATION),
@@ -166,9 +228,12 @@ public class SimpleGeofenceStore {
 
         // Remove a flattened geofence object from storage by removing all of its keys
         Editor editor = mPrefs.edit();
+        editor.remove(getGeofenceFieldKey(id, GeofenceUtils.KEY_NAME));
         editor.remove(getGeofenceFieldKey(id, GeofenceUtils.KEY_LATITUDE));
         editor.remove(getGeofenceFieldKey(id, GeofenceUtils.KEY_LONGITUDE));
         editor.remove(getGeofenceFieldKey(id, GeofenceUtils.KEY_RADIUS));
+        editor.remove(getGeofenceFieldKey(id, GeofenceUtils.KEY_URL));
+        editor.remove(getGeofenceFieldKey(id, GeofenceUtils.KEY_NOTIFICATION_TEXT));
         editor.remove(getGeofenceFieldKey(id, GeofenceUtils.KEY_EXPIRATION_DURATION));
         editor.remove(getGeofenceFieldKey(id, GeofenceUtils.KEY_TRANSITION_TYPE));
         editor.commit();

@@ -47,6 +47,9 @@ public class LocationListFragment extends ListFragment implements GooglePlayServ
     // Whether there is a mobile connection.
     private static boolean mobileConnected = false;
 
+    //Geofences Store
+    private SimpleGeofenceStore mPrefs;
+
     private LocationClient locClient;
     private Location mloc = null;
 
@@ -236,9 +239,16 @@ public class LocationListFragment extends ListFragment implements GooglePlayServ
         super.onViewCreated(view, savedInstanceState);
         locClient =new LocationClient(getActivity(), this, this);
         // Restore the previously serialized activated item position.
+        mPrefs = new SimpleGeofenceStore(getActivity());
+        setEmptyText(getString(R.string.no_results));
         if (savedInstanceState != null
                 && savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
             setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
+        }
+        data = mPrefs.getGeofences();
+        if(data != null && !data.isEmpty()){
+            ListViewLoaderTask lvLoader = new ListViewLoaderTask();
+            lvLoader.execute(data);
         }
     }
 
@@ -396,7 +406,7 @@ public class LocationListFragment extends ListFragment implements GooglePlayServ
         @Override
         protected SimpleAdapter doInBackground(List<HashMap<String, String>>... list) {
             List<HashMap<String, String>> items = list[0];
-            String[] from = {"name", "vicinity"};
+            String[] from = {GeofenceUtils.KEY_NAME, GeofenceUtils.KEY_NOTIFICATION_TEXT};
             int[] to = {R.id.name, R.id.vicinity};
             mAdapter = new SimpleAdapter(getActivity()
                     .getBaseContext(), items, R.layout.row, from, to);
